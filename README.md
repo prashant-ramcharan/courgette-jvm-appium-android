@@ -13,6 +13,10 @@ An example project showing how to use Courgette-JVM with Appium to test Android 
 
 There are 2 scenarios in this project and Courgette will run both scenarios in parallel across 2 different android emulators.
 
+
+https://user-images.githubusercontent.com/2563149/144915983-a93e150e-0cb3-428d-a07d-eadd7377d154.mp4
+
+
 You must set the `ANDROID_HOME` [environment](https://developer.android.com/studio/command-line/variables) variable and point this to the Android SDK.
 
 Using Gradle from the command line
