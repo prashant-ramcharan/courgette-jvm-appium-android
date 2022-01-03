@@ -1,6 +1,7 @@
 package runners;
 
 import courgette.api.CourgetteOptions;
+import courgette.api.CourgettePlugin;
 import courgette.api.CourgetteRunLevel;
 import courgette.api.CucumberOptions;
 import courgette.api.junit.Courgette;
@@ -13,6 +14,11 @@ import org.junit.runner.RunWith;
         reportTargetDir = "build",
         showTestOutput = true,
         environmentInfo = "app=Android test application; project_info=Courgette-JVM is awesome!",
+        plugin = {CourgettePlugin.MOBILE_DEVICE_ALLOCATOR},
+        mobileDevice = {
+                "Nexus_6",
+                "Pixel_4a"
+        },
         cucumberOptions = @CucumberOptions(
                 features = "src/test/resources/features",
                 glue = "steps",

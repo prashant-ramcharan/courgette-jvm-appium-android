@@ -1,10 +1,12 @@
 package steps;
 
+import courgette.api.CourgetteMobileDeviceAllocator;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -22,13 +24,16 @@ import static java.lang.String.format;
 public class TestSteps {
     private AndroidDriver<WebElement> driver;
     private AppiumDriverLocalService service;
+    private Scenario currentScenario;
 
     @Before
-    public void before() {
+    public void before(Scenario scenario) {
         if (System.getenv("ANDROID_HOME") == null) {
             throw new RuntimeException("ANDROID_HOME environment variable is missing!");
         }
+        currentScenario = scenario;
         service = createAppiumDriverLocalService();
+        driver = createAndriodDriver(service.getUrl());
     }
 
     @After
@@ -36,9 +41,9 @@ public class TestSteps {
         driver.quit();
     }
 
-    @Given("I have a {} device")
-    public void iHaveAIDevice(String deviceName) {
-        driver = createAndriodDriver(service.getUrl(), deviceName, getSystemPort(deviceName));
+    @Given("I launch the app")
+    public void iLaunchTheApp() {
+        driver.launchApp();
     }
 
     @When("I open {} menu")
@@ -51,14 +56,20 @@ public class TestSteps {
         Assert.assertTrue(driver.findElement(By.xpath(format("//*[@text='%s']", label))).isDisplayed());
     }
 
-    private AndroidDriver<WebElement> createAndriodDriver(final URL serverURL, final String deviceName, final int systemPort) {
+    private AndroidDriver<WebElement> createAndriodDriver(final URL serverURL) {
         File app = new File(Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResource("apps/ApiDemos-debug.apk")).getFile());
+
         DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("avd", deviceName);
+        capabilities.setCapability("avd", CourgetteMobileDeviceAllocator.DEVICE_NAME);
+        capabilities.setCapability("udid", CourgetteMobileDeviceAllocator.UDID);
+        capabilities.setCapability("systemPort", CourgetteMobileDeviceAllocator.PARALLEL_PORT);
         capabilities.setCapability("platformName", "Android");
         capabilities.setCapability("app", app.getAbsolutePath());
         capabilities.setCapability("automationName", "UiAutomator2");
-        capabilities.setCapability("systemPort", systemPort);
+        capabilities.setCapability("autoLaunch", false);
+
+        currentScenario.log(format("Android Device: %s", capabilities.getCapability("avd")));
+
         return new AndroidDriver<>(serverURL, capabilities);
     }
 
@@ -68,15 +79,5 @@ public class TestSteps {
         service = serviceBuilder.build();
         service.start();
         return service;
-    }
-
-    private int getSystemPort(final String deviceName) {
-        switch (deviceName) {
-            case "Pixel_4a":
-                return 8200;
-            case "Nexus_6":
-                return 8201;
-        }
-        return 8202;
     }
 }
